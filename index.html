@@ -52,131 +52,134 @@
     .empty { padding: 10px 0; opacity: .8; }
     footer { padding: 14px 16px; opacity: .7; font-size: 12px; }
     .hint { font-size: 12px; opacity: .8; margin-top: 8px; }
-    .statusline { margin-top: 10px; font-size: 12px; opacity: .85; }
+    .statusline { margin-top: 10px; font-size: 12px; opacity: .9; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .ok { color: #9be39b; }
     .warn { color: #ffd28a; }
     .err { color: #ff9a9a; }
+    .tiny { font-size: 12px; opacity:.8; }
   </style>
 </head>
 
 <body>
-  <header>
-    <h1>📺 Qui écoute quoi ? (Louise & Yvon)</h1>
-  </header>
+<header>
+  <h1>📺 Qui écoute quoi ? (Louise & Yvon)</h1>
+</header>
 
-  <main class="grid">
-    <section class="card">
-      <div class="row">
-        <div>
-          <label for="title">Titre de la série</label>
-          <input id="title" type="text" placeholder="ex. Severance" autocomplete="off" />
-        </div>
-
-        <div>
-          <label for="platform">Plateforme</label>
-          <input id="platform" type="text" placeholder="ex. Apple TV+" autocomplete="off" />
-        </div>
-
-        <div>
-          <label for="who">Qui écoute ?</label>
-          <select id="who">
-            <option value="Louise">Louise</option>
-            <option value="Yvon">Yvon</option>
-            <option value="Ensemble">Ensemble</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="status">Statut</label>
-          <select id="status">
-            <option value="À commencer">À commencer</option>
-            <option value="En cours">En cours</option>
-            <option value="Terminé">Terminé</option>
-          </select>
-        </div>
-
-        <div class="actions">
-          <button id="saveBtn">Ajouter</button>
-          <button id="cancelEditBtn" class="secondary" style="display:none;">Annuler</button>
-        </div>
+<main class="grid">
+  <section class="card">
+    <div class="row">
+      <div>
+        <label for="title">Titre de la série</label>
+        <input id="title" type="text" placeholder="ex. Severance" autocomplete="off" />
       </div>
 
-      <div class="hint muted">
-        Astuce: <b>Ensemble</b> compte pour Louise + Yvon dans les filtres.
+      <div>
+        <label for="platform">Plateforme</label>
+        <input id="platform" type="text" placeholder="ex. Apple TV+" autocomplete="off" />
       </div>
-      <div id="syncStatus" class="statusline muted">Connexion: <span class="warn">en cours…</span></div>
-    </section>
 
-    <section class="card">
-      <div class="toolbar">
-        <div>
-          <label for="search">Recherche</label>
-          <input id="search" type="text" placeholder="Titre, plateforme, qui, statut..." autocomplete="off" />
-        </div>
-
-        <div>
-          <label for="filterWho">Filtrer (qui)</label>
-          <select id="filterWho">
-            <option value="all">Tous</option>
-            <option value="Louise">Louise (inclut Ensemble)</option>
-            <option value="Yvon">Yvon (inclut Ensemble)</option>
-            <option value="Ensemble">Ensemble seulement</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="filterStatus">Filtrer (statut)</label>
-          <select id="filterStatus">
-            <option value="all">Tous</option>
-            <option value="À commencer">À commencer</option>
-            <option value="En cours">En cours</option>
-            <option value="Terminé">Terminé</option>
-          </select>
-        </div>
-
-        <div class="tight" style="display:flex; gap:10px; align-items:end;">
-          <button id="reloadBtn" class="secondary" title="Recharger depuis Google Sheets">Recharger</button>
-          <button id="exportBtn" class="secondary" title="Copier les données en JSON">Exporter</button>
-          <button id="clearBtn" class="danger" title="Effacer toutes les séries (dans Sheets)">Tout effacer</button>
-        </div>
+      <div>
+        <label for="who">Qui écoute ?</label>
+        <select id="who">
+          <option value="Louise">Louise</option>
+          <option value="Yvon">Yvon</option>
+          <option value="Ensemble">Ensemble</option>
+        </select>
       </div>
-    </section>
 
-    <section class="card">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:40%;">Série</th>
-            <th style="width:22%;">Plateforme</th>
-            <th style="width:12%;">Qui</th>
-            <th style="width:14%;">Statut</th>
-            <th style="width:12%; text-align:right;">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-
-      <div id="empty" class="empty" style="display:none;">
-        Aucune série ici… le canapé a faim 🍿
+      <div>
+        <label for="status">Statut</label>
+        <select id="status">
+          <option value="À commencer">À commencer</option>
+          <option value="En cours">En cours</option>
+          <option value="Terminé">Terminé</option>
+        </select>
       </div>
-    </section>
-  </main>
 
-  <footer>
-    Données partagées via Google Sheets (Apps Script). Même liste pour tout le monde.
-  </footer>
+      <div class="actions">
+        <button id="saveBtn">Ajouter</button>
+        <button id="cancelEditBtn" class="secondary" style="display:none;">Annuler</button>
+      </div>
+    </div>
+
+    <div class="hint muted">Astuce: <b>Ensemble</b> compte pour Louise + Yvon dans les filtres.</div>
+    <div id="syncStatus" class="statusline">
+      <span>Connexion: <span class="warn">en cours…</span></span>
+      <span class="tiny">File d’attente: <b id="queueCount">0</b></span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="toolbar">
+      <div>
+        <label for="search">Recherche</label>
+        <input id="search" type="text" placeholder="Titre, plateforme, qui, statut..." autocomplete="off" />
+      </div>
+
+      <div>
+        <label for="filterWho">Filtrer (qui)</label>
+        <select id="filterWho">
+          <option value="all">Tous</option>
+          <option value="Louise">Louise (inclut Ensemble)</option>
+          <option value="Yvon">Yvon (inclut Ensemble)</option>
+          <option value="Ensemble">Ensemble seulement</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="filterStatus">Filtrer (statut)</label>
+        <select id="filterStatus">
+          <option value="all">Tous</option>
+          <option value="À commencer">À commencer</option>
+          <option value="En cours">En cours</option>
+          <option value="Terminé">Terminé</option>
+        </select>
+      </div>
+
+      <div class="tight" style="display:flex; gap:10px; align-items:end;">
+        <button id="reloadBtn" class="secondary" title="Recharger depuis Google Sheets">Recharger</button>
+        <button id="exportBtn" class="secondary" title="Copier les données en JSON">Exporter</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:40%;">Série</th>
+          <th style="width:22%;">Plateforme</th>
+          <th style="width:12%;">Qui</th>
+          <th style="width:14%;">Statut</th>
+          <th style="width:12%; text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+
+    <div id="empty" class="empty" style="display:none;">Aucune série ici… le canapé a faim 🍿</div>
+  </section>
+</main>
+
+<footer>
+  UI instantanée (optimistic). Les écritures sont envoyées en arrière-plan vers Google Sheets.
+</footer>
 
 <script>
 (() => {
   // ✅ Colle ici ton URL Apps Script (se termine par /exec)
-  const API_URL = "https://script.google.com/macros/s/AKfycbyyOsZQma7wf5op2rfAHntRG9SzfSKB4Tbbz4ObEjdxHIS2RXDr7C814ojBccbo4rFr/exec";
+  const API_URL = "COLLE_ICI_TON_URL_EXEC";
 
   // --- State ---
   let items = [];
   let editingId = null;
-  let busy = false;
 
-  // --- DOM ---
+  // Queue: id -> { type: "upsert"|"delete", payload, seq }
+  const pendingMap = new Map();
+  let seq = 0;
+  let flushing = false;
+
+  // DOM
   const titleEl = document.getElementById("title");
   const platformEl = document.getElementById("platform");
   const whoEl = document.getElementById("who");
@@ -193,11 +196,11 @@
 
   const reloadBtn = document.getElementById("reloadBtn");
   const exportBtn = document.getElementById("exportBtn");
-  const clearBtn = document.getElementById("clearBtn");
 
   const syncStatusEl = document.getElementById("syncStatus");
+  const queueCountEl = document.getElementById("queueCount");
 
-  // --- API helpers (Apps Script) ---
+  // --- API (Apps Script) ---
   async function apiList() {
     const res = await fetch(`${API_URL}?action=list`, { method: "GET" });
     const data = await res.json();
@@ -219,7 +222,6 @@
       headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
       body
     });
-
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "API upsert: échec");
     return data.item;
@@ -235,31 +237,38 @@
       headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
       body
     });
-
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "API delete: échec");
     return data.deleted;
   }
 
-  // --- UI helpers ---
-  function normalize(s) { return (s || "").trim(); }
-
-  function setBusy(isBusy) {
-    busy = isBusy;
-    saveBtn.disabled = busy;
-    reloadBtn.disabled = busy;
-    exportBtn.disabled = busy;
-    clearBtn.disabled = busy;
-    titleEl.disabled = busy;
-    platformEl.disabled = busy;
-    whoEl.disabled = busy;
-    statusEl.disabled = busy;
-    cancelEditBtn.disabled = busy;
+  // --- Helpers ---
+  function uuid() {
+    return Math.random().toString(16).slice(2) + Date.now().toString(16);
   }
-
+  function normalize(s) { return (s || "").trim(); }
+  function escapeHtml(str) {
+    return (str || "").replace(/[&<>"']/g, (ch) => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[ch]));
+  }
   function setSyncStatus(kind, msg) {
     const cls = kind === "ok" ? "ok" : kind === "err" ? "err" : "warn";
-    syncStatusEl.innerHTML = `Connexion: <span class="${cls}">${escapeHtml(msg)}</span>`;
+    syncStatusEl.querySelector("span").innerHTML = `Connexion: <span class="${cls}">${escapeHtml(msg)}</span>`;
+  }
+  function updateQueueCount() {
+    queueCountEl.textContent = String(pendingMap.size);
+  }
+
+  function whoEmoji(who) {
+    if (who === "Louise") return "👩";
+    if (who === "Yvon") return "👨";
+    return "👥";
+  }
+  function statusEmoji(status) {
+    if (status === "À commencer") return "🆕";
+    if (status === "En cours") return "⏳";
+    return "✅";
   }
 
   function matchesWho(item, filterValue) {
@@ -267,24 +276,20 @@
     if (filterValue === "Ensemble") return item.who === "Ensemble";
     return item.who === filterValue || item.who === "Ensemble";
   }
-
   function matchesStatus(item, filterValue) {
     if (filterValue === "all") return true;
     return item.status === filterValue;
   }
-
   function matchesSearch(item, q) {
     if (!q) return true;
     const hay = (item.title + " " + item.platform + " " + item.who + " " + item.status).toLowerCase();
     return hay.includes(q.toLowerCase());
   }
-
   function sortItems(a, b) {
     const order = { "À commencer": 0, "En cours": 1, "Terminé": 2 };
     const sa = order[a.status] ?? 99;
     const sb = order[b.status] ?? 99;
     if (sa !== sb) return sa - sb;
-
     const t = (a.title || "").localeCompare((b.title || ""), "fr", { sensitivity: "base" });
     if (t !== 0) return t;
     return (a.platform || "").localeCompare((b.platform || ""), "fr", { sensitivity: "base" });
@@ -315,24 +320,82 @@
     statusEl.value = "À commencer";
   }
 
-  function whoEmoji(who) {
-    if (who === "Louise") return "👩";
-    if (who === "Yvon") return "👨";
-    return "👥";
+  // --- Local upsert/delete (optimistic) ---
+  function upsertLocal(draft) {
+    const idx = items.findIndex(x => x.id === draft.id);
+    if (idx >= 0) items[idx] = { ...items[idx], ...draft };
+    else items.push(draft);
   }
 
-  function statusEmoji(status) {
-    if (status === "À commencer") return "🆕";
-    if (status === "En cours") return "⏳";
-    return "✅";
+  function deleteLocal(id) {
+    items = items.filter(x => x.id !== id);
   }
 
-  function escapeHtml(str) {
-    return (str || "").replace(/[&<>"']/g, (ch) => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[ch]));
+  // --- Queue + flush (last-write-wins per id) ---
+  function enqueueUpsert(draft) {
+    const key = draft.id;
+    pendingMap.set(key, { type: "upsert", payload: draft, seq: ++seq });
+    updateQueueCount();
+    flushSoon();
   }
 
+  function enqueueDelete(id) {
+    pendingMap.set(id, { type: "delete", payload: { id }, seq: ++seq });
+    updateQueueCount();
+    flushSoon();
+  }
+
+  let flushTimer = null;
+  function flushSoon() {
+    if (flushing) return;
+    clearTimeout(flushTimer);
+    // petit debounce pour regrouper les actions rapprochées
+    flushTimer = setTimeout(flushQueue, 250);
+  }
+
+  async function flushQueue() {
+    if (flushing) return;
+    if (pendingMap.size === 0) return;
+
+    flushing = true;
+    setSyncStatus("warn", "synchro…");
+
+    try {
+      // Traiter dans l’ordre des seq (mais last-write-wins est déjà garanti par Map)
+      const batch = Array.from(pendingMap.entries())
+        .map(([id, job]) => ({ id, ...job }))
+        .sort((a, b) => a.seq - b.seq);
+
+      for (const job of batch) {
+        // Vérifie que le job est toujours le dernier pour cet id
+        const current = pendingMap.get(job.id);
+        if (!current || current.seq !== job.seq) continue;
+
+        if (job.type === "delete") {
+          await apiDelete(job.id);
+          pendingMap.delete(job.id);
+        } else {
+          const saved = await apiUpsert(job.payload);
+          // Optionnel: intégrer updatedAt renvoyé par le serveur (sans recharger tout)
+          upsertLocal(saved);
+          pendingMap.delete(job.id);
+        }
+        updateQueueCount();
+        render(); // léger, mais donne retour visuel immédiat
+      }
+
+      setSyncStatus("ok", "synchro OK");
+    } catch (err) {
+      // On garde la queue, l’utilisateur peut Recharger pour re-sync/diagnostic
+      setSyncStatus("err", "synchro en échec (queue conservée)");
+      console.error(err);
+    } finally {
+      flushing = false;
+      updateQueueCount();
+    }
+  }
+
+  // --- Render ---
   function render() {
     const q = normalize(searchEl.value);
     const fWho = filterWhoEl.value;
@@ -376,24 +439,17 @@
       const del = document.createElement("button");
       del.className = "danger";
       del.textContent = "Supprimer";
-      del.addEventListener("click", async () => {
+      del.addEventListener("click", () => {
         const ok = confirm(`Supprimer "${it.title}" ?`);
         if (!ok) return;
 
-        try {
-          setBusy(true);
-          setSyncStatus("warn", "suppression…");
-          await apiDelete(it.id);
-          items = await apiList();
-          if (editingId === it.id) exitEditMode();
-          render();
-          setSyncStatus("ok", "synchro OK");
-        } catch (err) {
-          setSyncStatus("err", "erreur de synchro");
-          alert("Suppression impossible.\n\n" + err);
-        } finally {
-          setBusy(false);
-        }
+        // ✅ Optimistic: enlever tout de suite
+        deleteLocal(it.id);
+        if (editingId === it.id) exitEditMode();
+        render();
+
+        // ✅ Queue: suppression en arrière-plan
+        enqueueDelete(it.id);
       });
 
       const wrap = document.createElement("div");
@@ -407,24 +463,8 @@
     }
   }
 
-  // --- Actions réseau ---
-  async function reloadFromServer() {
-    try {
-      setBusy(true);
-      setSyncStatus("warn", "chargement…");
-      items = await apiList();
-      render();
-      setSyncStatus("ok", "synchro OK");
-    } catch (err) {
-      setSyncStatus("err", "impossible de se connecter");
-      render(); // montre vide quand même
-      alert("Impossible de charger la liste.\n\nVérifie:\n- API_URL (/exec)\n- Déploiement Apps Script\n- Accès: 'Toute personne disposant du lien'\n\nDétail:\n" + err);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function addOrUpdate() {
+  // --- Actions ---
+  function addOrUpdateOptimistic() {
     const title = normalize(titleEl.value);
     const platform = normalize(platformEl.value);
     const who = whoEl.value;
@@ -436,7 +476,10 @@
       return;
     }
 
-    // (Optionnel) bloque duplicata exact en mode ajout (même titre + même who)
+    // Id: en ajout, on génère un id tout de suite (optimistic)
+    const id = editingId || uuid();
+
+    // Empêche duplicata exact en mode ajout (même titre + même who)
     if (!editingId) {
       const exists = items.some(x =>
         (x.title || "").toLowerCase() === title.toLowerCase() &&
@@ -448,29 +491,62 @@
       }
     }
 
+    const draft = { id, title, platform, who, status, updatedAt: Date.now() };
+
+    // ✅ Optimistic: update local + UI instant
+    upsertLocal(draft);
+    render();
+
+    // ✅ Enqueue write (last-write-wins)
+    enqueueUpsert(draft);
+
+    exitEditMode();
+    titleEl.focus();
+  }
+
+  async function reloadFromServer() {
+    if (!API_URL || API_URL.includes("COLLE_ICI")) {
+      setSyncStatus("err", "API_URL manquant (colle ton /exec)");
+      return;
+    }
+
     try {
-      setBusy(true);
-      setSyncStatus("warn", editingId ? "mise à jour…" : "ajout…");
+      setSyncStatus("warn", "rechargement…");
+      const serverItems = await apiList();
 
-      await apiUpsert({ id: editingId, title, platform, who, status });
+      // On conserve les changements locaux non envoyés en priorité (optimistic)
+      const localPendingIds = new Set(pendingMap.keys());
+      const merged = [];
 
-      // Recharge depuis Sheets pour être certain d’être synchro
-      items = await apiList();
+      // 1) items serveur
+      for (const s of serverItems) merged.push(s);
 
-      exitEditMode();
+      // 2) réappliquer les pending (upsert/delete) par-dessus
+      for (const [id, job] of pendingMap.entries()) {
+        if (job.type === "delete") {
+          // supprimer de merged
+          for (let i = merged.length - 1; i >= 0; i--) {
+            if (merged[i].id === id) merged.splice(i, 1);
+          }
+        } else {
+          // upsert par-dessus
+          const idx = merged.findIndex(x => x.id === id);
+          if (idx >= 0) merged[idx] = { ...merged[idx], ...job.payload };
+          else merged.push(job.payload);
+        }
+      }
+
+      items = merged;
       render();
-      setSyncStatus("ok", "synchro OK");
-      titleEl.focus();
+      setSyncStatus("ok", localPendingIds.size ? "rechargé (modifs locales conservées)" : "synchro OK");
     } catch (err) {
-      setSyncStatus("err", "erreur de synchro");
-      alert("Sauvegarde impossible.\n\n" + err);
-    } finally {
-      setBusy(false);
+      setSyncStatus("err", "impossible de se connecter");
+      alert("Impossible de recharger.\n\n" + err);
     }
   }
 
-  // --- Events ---
-  saveBtn.addEventListener("click", addOrUpdate);
+  // Events
+  saveBtn.addEventListener("click", addOrUpdateOptimistic);
   cancelEditBtn.addEventListener("click", exitEditMode);
 
   searchEl.addEventListener("input", render);
@@ -483,45 +559,25 @@
     const json = JSON.stringify(items, null, 2);
     try {
       await navigator.clipboard.writeText(json);
-      alert("Export JSON copié dans le presse-papiers ✅");
+      alert("Export JSON copié ✅");
     } catch {
       prompt("Copie ce JSON:", json);
     }
   });
 
-  clearBtn.addEventListener("click", async () => {
-    const ok = confirm("Tout effacer ? (irréversible)\n\n⚠️ Ça va supprimer toutes les séries dans Google Sheets.");
-    if (!ok) return;
-
-    // Pour "tout effacer" sans ajouter une route API dédiée,
-    // on supprime une par une via apiDelete.
-    try {
-      setBusy(true);
-      setSyncStatus("warn", "effacement…");
-      for (const it of items.slice()) {
-        await apiDelete(it.id);
-      }
-      items = await apiList();
-      exitEditMode();
-      render();
-      setSyncStatus("ok", "synchro OK");
-    } catch (err) {
-      setSyncStatus("err", "erreur de synchro");
-      alert("Effacement impossible.\n\n" + err);
-    } finally {
-      setBusy(false);
-    }
-  });
-
   // Init
   (async () => {
-    // Petit filet de sécurité: si API_URL non configuré
     if (!API_URL || API_URL.includes("COLLE_ICI")) {
       setSyncStatus("err", "API_URL manquant (colle ton /exec)");
       render();
       return;
     }
+
+    setSyncStatus("warn", "chargement…");
     await reloadFromServer();
+
+    // flush automatique périodique, au cas où (ex. réseau qui revient)
+    setInterval(() => { if (pendingMap.size) flushSoon(); }, 2000);
   })();
 })();
 </script>
