@@ -9,11 +9,11 @@
     body { margin: 0; background: #0b0c10; color: #e9eef6; }
     header { padding: 18px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
     h1 { margin: 0; font-size: 18px; font-weight: 700; }
-    main { padding: 16px; max-width: 980px; margin: 0 auto; }
+    main { padding: 16px; max-width: 1050px; margin: 0 auto; }
     .grid { display: grid; gap: 12px; }
     .card { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); border-radius: 12px; padding: 14px; }
     .row { display: grid; gap: 10px; grid-template-columns: 1fr; }
-    @media (min-width: 800px) { .row { grid-template-columns: 2fr 1.5fr 1.5fr auto; align-items: end; } }
+    @media (min-width: 900px) { .row { grid-template-columns: 2fr 1.4fr 1.2fr 1.2fr auto; align-items: end; } }
     label { font-size: 12px; opacity: .85; display:block; margin-bottom: 6px; }
     input, select, button { width: 100%; box-sizing: border-box; }
     input, select {
@@ -33,7 +33,7 @@
     button.secondary { background: rgba(255,255,255,.12); color: #e9eef6; }
     button.danger { background: rgba(255,80,80,.18); color: #ffb7b7; border: 1px solid rgba(255,80,80,.35); }
     .toolbar { display:flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .toolbar > * { flex: 1; min-width: 160px; }
+    .toolbar > * { flex: 1; min-width: 170px; }
     .toolbar .tight { flex: 0 0 auto; min-width: auto; }
     table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; padding: 10px 10px; border-bottom: 1px solid rgba(255,255,255,.08); vertical-align: top; }
@@ -44,6 +44,7 @@
       padding: 4px 10px; border-radius: 999px;
       background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.12);
       font-size: 12px;
+      white-space: nowrap;
     }
     .muted { opacity: .75; }
     .actions { display:flex; gap:8px; justify-content: flex-end; flex-wrap: wrap; }
@@ -81,6 +82,15 @@
           </select>
         </div>
 
+        <div>
+          <label for="status">Statut</label>
+          <select id="status">
+            <option value="À commencer">À commencer</option>
+            <option value="En cours">En cours</option>
+            <option value="Terminé">Terminé</option>
+          </select>
+        </div>
+
         <div class="actions">
           <button id="saveBtn">Ajouter</button>
           <button id="cancelEditBtn" class="secondary" style="display:none;">Annuler</button>
@@ -88,7 +98,7 @@
       </div>
 
       <div class="hint muted">
-        Astuce: si vous écoutez ensemble, choisissez <b>Ensemble</b> (ça compte pour Louise + Yvon dans les filtres).
+        Astuce: <b>Ensemble</b> compte pour Louise + Yvon dans les filtres.
       </div>
     </section>
 
@@ -96,16 +106,26 @@
       <div class="toolbar">
         <div>
           <label for="search">Recherche</label>
-          <input id="search" type="text" placeholder="Titre ou plateforme..." autocomplete="off" />
+          <input id="search" type="text" placeholder="Titre, plateforme, qui, statut..." autocomplete="off" />
         </div>
 
         <div>
-          <label for="filter">Filtrer</label>
-          <select id="filter">
+          <label for="filterWho">Filtrer (qui)</label>
+          <select id="filterWho">
             <option value="all">Tous</option>
             <option value="Louise">Louise (inclut Ensemble)</option>
             <option value="Yvon">Yvon (inclut Ensemble)</option>
             <option value="Ensemble">Ensemble seulement</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="filterStatus">Filtrer (statut)</label>
+          <select id="filterStatus">
+            <option value="all">Tous</option>
+            <option value="À commencer">À commencer</option>
+            <option value="En cours">En cours</option>
+            <option value="Terminé">Terminé</option>
           </select>
         </div>
 
@@ -120,10 +140,11 @@
       <table>
         <thead>
           <tr>
-            <th style="width:45%;">Série</th>
-            <th style="width:25%;">Plateforme</th>
-            <th style="width:15%;">Qui</th>
-            <th style="width:15%; text-align:right;">Actions</th>
+            <th style="width:40%;">Série</th>
+            <th style="width:22%;">Plateforme</th>
+            <th style="width:12%;">Qui</th>
+            <th style="width:14%;">Statut</th>
+            <th style="width:12%; text-align:right;">Actions</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -136,26 +157,29 @@
   </main>
 
   <footer>
-    Données enregistrées localement dans ce navigateur (localStorage). Aucun serveur, aucun compte, juste vous deux et vos séries.
+    Données enregistrées localement dans ce navigateur (localStorage). Aucun serveur, aucun compte.
   </footer>
 
 <script>
 (() => {
-  const STORAGE_KEY = "series_who_watches_v1";
+  // Nouveau storage key (v2) car on ajoute "status"
+  const STORAGE_KEY_V2 = "series_who_watches_v2";
+  const STORAGE_KEY_V1 = "series_who_watches_v1";
 
-  // --- State ---
   let items = load();
   let editingId = null;
 
-  // --- DOM ---
+  // DOM
   const titleEl = document.getElementById("title");
   const platformEl = document.getElementById("platform");
   const whoEl = document.getElementById("who");
+  const statusEl = document.getElementById("status");
   const saveBtn = document.getElementById("saveBtn");
   const cancelEditBtn = document.getElementById("cancelEditBtn");
 
   const searchEl = document.getElementById("search");
-  const filterEl = document.getElementById("filter");
+  const filterWhoEl = document.getElementById("filterWho");
+  const filterStatusEl = document.getElementById("filterStatus");
 
   const tbody = document.getElementById("tbody");
   const emptyEl = document.getElementById("empty");
@@ -163,7 +187,6 @@
   const exportBtn = document.getElementById("exportBtn");
   const clearBtn = document.getElementById("clearBtn");
 
-  // --- Helpers ---
   function uuid() {
     return Math.random().toString(16).slice(2) + Date.now().toString(16);
   }
@@ -173,34 +196,70 @@
   }
 
   function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(items));
+  }
+
+  function migrateFromV1IfNeeded() {
+    // Si v2 existe déjà, on ne touche à rien.
+    const v2 = localStorage.getItem(STORAGE_KEY_V2);
+    if (v2) return;
+
+    // Sinon, si v1 existe, on le migre en ajoutant status = "À commencer"
+    const v1 = localStorage.getItem(STORAGE_KEY_V1);
+    if (!v1) return;
+
+    try {
+      const parsed = JSON.parse(v1);
+      if (Array.isArray(parsed)) {
+        items = parsed.map(it => ({
+          id: it.id || uuid(),
+          title: it.title || "",
+          platform: it.platform || "",
+          who: it.who || "Louise",
+          status: "À commencer",
+          createdAt: it.createdAt || Date.now()
+        }));
+        save();
+      }
+    } catch { /* ignore */ }
   }
 
   function load() {
+    // tentative v2
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
+      const raw = localStorage.getItem(STORAGE_KEY_V2);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(parsed)) return parsed;
+    } catch { /* ignore */ }
+
+    // fallback: empty (migration se fera après init)
+    return [];
   }
 
-  function matchesFilter(item, filterValue) {
+  function matchesWho(item, filterValue) {
     if (filterValue === "all") return true;
     if (filterValue === "Ensemble") return item.who === "Ensemble";
-    // Louise or Yvon: include Ensemble too
     return item.who === filterValue || item.who === "Ensemble";
+  }
+
+  function matchesStatus(item, filterValue) {
+    if (filterValue === "all") return true;
+    return item.status === filterValue;
   }
 
   function matchesSearch(item, q) {
     if (!q) return true;
-    const hay = (item.title + " " + item.platform + " " + item.who).toLowerCase();
+    const hay = (item.title + " " + item.platform + " " + item.who + " " + item.status).toLowerCase();
     return hay.includes(q.toLowerCase());
   }
 
   function sortItems(a, b) {
-    // Sort by title then platform
+    // Statut d'abord (À commencer -> En cours -> Terminé), puis titre
+    const order = { "À commencer": 0, "En cours": 1, "Terminé": 2 };
+    const sa = order[a.status] ?? 99;
+    const sb = order[b.status] ?? 99;
+    if (sa !== sb) return sa - sb;
+
     const t = a.title.localeCompare(b.title, "fr", { sensitivity: "base" });
     if (t !== 0) return t;
     return a.platform.localeCompare(b.platform, "fr", { sensitivity: "base" });
@@ -214,6 +273,7 @@
     titleEl.value = item.title;
     platformEl.value = item.platform;
     whoEl.value = item.who;
+    statusEl.value = item.status || "À commencer";
 
     saveBtn.textContent = "Enregistrer";
     cancelEditBtn.style.display = "inline-block";
@@ -227,25 +287,42 @@
     titleEl.value = "";
     platformEl.value = "";
     whoEl.value = "Louise";
+    statusEl.value = "À commencer";
+  }
+
+  function whoEmoji(who) {
+    if (who === "Louise") return "👩";
+    if (who === "Yvon") return "👨";
+    return "👥";
+  }
+
+  function statusEmoji(status) {
+    if (status === "À commencer") return "🆕";
+    if (status === "En cours") return "⏳";
+    return "✅";
+  }
+
+  function escapeHtml(str) {
+    return (str || "").replace(/[&<>"']/g, (ch) => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[ch]));
   }
 
   function render() {
     const q = normalize(searchEl.value);
-    const f = filterEl.value;
+    const fWho = filterWhoEl.value;
+    const fStatus = filterStatusEl.value;
 
     const filtered = items
-      .filter(it => matchesFilter(it, f))
+      .filter(it => matchesWho(it, fWho))
+      .filter(it => matchesStatus(it, fStatus))
       .filter(it => matchesSearch(it, q))
       .slice()
       .sort(sortItems);
 
     tbody.innerHTML = "";
 
-    if (filtered.length === 0) {
-      emptyEl.style.display = "block";
-    } else {
-      emptyEl.style.display = "none";
-    }
+    emptyEl.style.display = filtered.length === 0 ? "block" : "none";
 
     for (const it of filtered) {
       const tr = document.createElement("tr");
@@ -260,6 +337,9 @@
 
       const tdWho = document.createElement("td");
       tdWho.innerHTML = `<span class="pill">${whoEmoji(it.who)} ${escapeHtml(it.who)}</span>`;
+
+      const tdStatus = document.createElement("td");
+      tdStatus.innerHTML = `<span class="pill">${statusEmoji(it.status)} ${escapeHtml(it.status)}</span>`;
 
       const tdActions = document.createElement("td");
       tdActions.style.textAlign = "right";
@@ -287,28 +367,17 @@
 
       tdActions.appendChild(wrap);
 
-      tr.append(tdTitle, tdPlat, tdWho, tdActions);
+      tr.append(tdTitle, tdPlat, tdWho, tdStatus, tdActions);
       tbody.appendChild(tr);
     }
   }
 
-  function whoEmoji(who) {
-    if (who === "Louise") return "👩";
-    if (who === "Yvon") return "👨";
-    return "👥";
-  }
-
-  function escapeHtml(str) {
-    return (str || "").replace(/[&<>"']/g, (ch) => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[ch]));
-  }
-
-  // --- Events ---
+  // Events
   saveBtn.addEventListener("click", () => {
     const title = normalize(titleEl.value);
     const platform = normalize(platformEl.value);
     const who = whoEl.value;
+    const status = statusEl.value;
 
     if (!title) {
       alert("Ajoute au moins un titre 🙂");
@@ -319,11 +388,11 @@
     if (editingId) {
       const idx = items.findIndex(x => x.id === editingId);
       if (idx !== -1) {
-        items[idx] = { ...items[idx], title, platform, who };
+        items[idx] = { ...items[idx], title, platform, who, status };
       }
       exitEditMode();
     } else {
-      // Prevent exact duplicates (same title + who) but allow same title on different "who"
+      // Empêche duplicata exact (même titre + même qui)
       const exists = items.some(x =>
         x.title.toLowerCase() === title.toLowerCase() &&
         x.who === who
@@ -332,10 +401,11 @@
         alert("Cette série existe déjà avec ce même 'qui écoute'.");
         return;
       }
-      items.push({ id: uuid(), title, platform, who, createdAt: Date.now() });
+      items.push({ id: uuid(), title, platform, who, status, createdAt: Date.now() });
       titleEl.value = "";
       platformEl.value = "";
       whoEl.value = "Louise";
+      statusEl.value = "À commencer";
       titleEl.focus();
     }
 
@@ -343,12 +413,11 @@
     render();
   });
 
-  cancelEditBtn.addEventListener("click", () => {
-    exitEditMode();
-  });
+  cancelEditBtn.addEventListener("click", exitEditMode);
 
   searchEl.addEventListener("input", render);
-  filterEl.addEventListener("change", render);
+  filterWhoEl.addEventListener("change", render);
+  filterStatusEl.addEventListener("change", render);
 
   exportBtn.addEventListener("click", async () => {
     const json = JSON.stringify(items, null, 2);
@@ -356,7 +425,6 @@
       await navigator.clipboard.writeText(json);
       alert("Export JSON copié dans le presse-papiers ✅");
     } catch {
-      // Fallback: prompt
       prompt("Copie ce JSON:", json);
     }
   });
@@ -370,7 +438,8 @@
     render();
   });
 
-  // --- Init ---
+  // Init: migration v1 -> v2 si besoin, puis render
+  migrateFromV1IfNeeded();
   render();
 })();
 </script>
