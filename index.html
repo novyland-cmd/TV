@@ -57,6 +57,25 @@
     .warn { color: #ffd28a; }
     .err { color: #ff9a9a; }
     .tiny { font-size: 12px; opacity:.8; }
+    .icon-btn {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  border-radius: 8px;
+  opacity: 0.85;
+}
+
+.icon-btn:hover {
+  background: rgba(255,255,255,.12);
+  opacity: 1;
+}
+
+.icon-btn.danger:hover {
+  background: rgba(255,80,80,.18);
+}
   </style>
 </head>
 
@@ -73,11 +92,20 @@
         <input id="title" type="text" placeholder="ex. Severance" autocomplete="off" />
       </div>
 
-      <div>
-        <label for="platform">Plateforme</label>
-        <input id="platform" type="text" placeholder="ex. Apple TV+" autocomplete="off" />
-      </div>
-
+<div>
+  <label for="platform">Plateforme</label>
+  <select id="platform">
+    <option value="">— Choisir —</option>
+    <option value="Cogeco">Cogeco</option>
+    <option value="Netflix">Netflix</option>
+    <option value="illico+">illico+</option>
+    <option value="Prime">Prime</option>
+    <option value="Crave">Crave</option>
+    <option value="Apple TV+">Apple TV+</option>
+    <option value="Disney+">Disney+</option>
+    <option value="YouTube">YouTube</option>
+  </select>
+</div>
       <div>
         <label for="who">Qui écoute ?</label>
         <select id="who">
@@ -285,15 +313,21 @@
     const hay = (item.title + " " + item.platform + " " + item.who + " " + item.status).toLowerCase();
     return hay.includes(q.toLowerCase());
   }
-  function sortItems(a, b) {
-    const order = { "À commencer": 0, "En cours": 1, "Terminé": 2 };
-    const sa = order[a.status] ?? 99;
-    const sb = order[b.status] ?? 99;
-    if (sa !== sb) return sa - sb;
-    const t = (a.title || "").localeCompare((b.title || ""), "fr", { sensitivity: "base" });
-    if (t !== 0) return t;
-    return (a.platform || "").localeCompare((b.platform || ""), "fr", { sensitivity: "base" });
-  }
+function sortItems(a, b) {
+  const t = (a.title || "").localeCompare(
+    (b.title || ""),
+    "fr",
+    { sensitivity: "base" }
+  );
+  if (t !== 0) return t;
+
+  // secondaire optionnel: plateforme
+  return (a.platform || "").localeCompare(
+    (b.platform || ""),
+    "fr",
+    { sensitivity: "base" }
+  );
+}
 
   function setEditMode(id) {
     editingId = id;
@@ -431,24 +465,28 @@
       const tdActions = document.createElement("td");
       tdActions.style.textAlign = "right";
 
+      // ✏️ Modifier
       const edit = document.createElement("button");
-      edit.className = "secondary";
-      edit.textContent = "Modifier";
+      edit.className = "icon-btn";
+      edit.innerHTML = "✏️";
+      edit.title = "Modifier la série";
       edit.addEventListener("click", () => setEditMode(it.id));
 
+      // 🗑️ Supprimer
       const del = document.createElement("button");
-      del.className = "danger";
-      del.textContent = "Supprimer";
+      del.className = "icon-btn danger";
+      del.innerHTML = "🗑️";
+      del.title = "Supprimer la série";
       del.addEventListener("click", () => {
         const ok = confirm(`Supprimer "${it.title}" ?`);
         if (!ok) return;
 
-        // ✅ Optimistic: enlever tout de suite
+        // Optimistic delete
         deleteLocal(it.id);
         if (editingId === it.id) exitEditMode();
         render();
 
-        // ✅ Queue: suppression en arrière-plan
+        // Suppression en arrière-plan
         enqueueDelete(it.id);
       });
 
